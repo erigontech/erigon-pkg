@@ -1,0 +1,7 @@
+{
+  "name": "erigon-pkg",
+  "packageManager": "yarn@3.6.3",
+  "dependencies": {
+    "zx": "^7.2.3"
+  }
+}
