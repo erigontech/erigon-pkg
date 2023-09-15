@@ -12,7 +12,7 @@ export const formPackage = (args) => {
   fs.removeSync(rootDir)
   fs.ensureDirSync(rootDir)
   fs.outputFileSync(`${rootDir}/PKGBUILD`, PKGBUILD(args))
-  fs.outputFileSync(`${rootDir}/.SRCINFO`, SRCINFO(args))
+  $`cd ${rootDir} && makepkg --printsrcinfo > .SRCINFO`
 }
 
 export const PKGBUILD = (args) => {
@@ -24,7 +24,7 @@ pkgver=${version}
 pkgrel=1
 epoch=1
 url='https://github.com/ledgerwatch/erigon'
-arch=('x86_64')
+arch=('x86_64' 'amd64')
 license=('GPL3')
 makedepends=('go')
 depends=('glibc')
@@ -63,12 +63,12 @@ pkgver = ${version}
 pkgrel = 1
 epoch = 1
 url = https://github.com/ledgerwatch/erigon
-arch = x86_64
+arch = x86_64, amd64
 license = GPL3
 makedepends = go
 depends = glibc
 source = ${download_url}
-sha256sums = ${version_hash}
+b2sums=('${version_hash}')
 
 pkgname = erigon
 `
