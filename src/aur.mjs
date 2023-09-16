@@ -51,25 +51,4 @@ package() {
     install -Dm755 build/bin/hack "${env("pkgdir")}"/usr/bin/erigon-hack
 }
 `
-
-}
-
-export const SRCINFO = (args) => {
-  const {version, download_url, version_hash} = args
-  return `
-pkgbase = erigon
-pkgdesc = Ethereum implementation on the efficiency frontier.
-pkgver = ${version}
-pkgrel = 1
-epoch = 1
-url = https://github.com/ledgerwatch/erigon
-arch = x86_64, amd64
-license = GPL3
-makedepends = go
-depends = glibc
-source = ${download_url}
-b2sums=('${version_hash}')
-
-pkgname = erigon
-`
 }
