@@ -7,24 +7,35 @@ const env = (str)=> { return "${"+str+"}" }
 
 
 
-export const formPackage = (args) => {
-  const rootDir = `temp/aur_${args.version}/`
+export const formSourcePackage = (args) => {
+  const rootDir = `temp/aur_src_erigon_${args.version}/`
   fs.removeSync(rootDir)
   fs.ensureDirSync(rootDir)
-  fs.outputFileSync(`${rootDir}/PKGBUILD`, PKGBUILD(args))
+  fs.outputFileSync(`${rootDir}/PKGBUILD`, PKGBUILD_Source(args))
   $`cd ${rootDir} && makepkg --printsrcinfo > .SRCINFO`
+
+  return rootDir
 }
 
-export const PKGBUILD = (args) => {
+export const formBinPackage = (args) => {
+  const rootDir = `temp/aur_bin_erigon_${args.version}/`
+  fs.removeSync(rootDir)
+  fs.ensureDirSync(rootDir)
+  fs.outputFileSync(`${rootDir}/PKGBUILD`, PKGBUILD_bin(args))
+  $`cd ${rootDir} && makepkg --printsrcinfo > .SRCINFO`
+
+  return rootDir
+}
+
+export const PKGBUILD_Source = (args) => {
   const {version, download_url, version_hash} = args
-  return `
-pkgname=erigon
+  return `pkgname=erigon
 pkgdesc='Ethereum implementation on the efficiency frontier.'
 pkgver=${version}
 pkgrel=1
 epoch=1
 url='https://github.com/ledgerwatch/erigon'
-arch=('x86_64' 'amd64')
+arch=('x86_64' 'aarch64')
 license=('GPL3')
 makedepends=('go')
 depends=('glibc')
@@ -49,6 +60,27 @@ package() {
     install -Dm755 build/bin/txpool "${env("pkgdir")}"/usr/bin/erigon-txpool
     install -Dm755 build/bin/integration "${env("pkgdir")}"/usr/bin/erigon-integration
     install -Dm755 build/bin/hack "${env("pkgdir")}"/usr/bin/erigon-hack
+}
+`
+}
+
+
+export const PKGBUILD_bin = (args) => {
+  const {version, download_url, version_hash} = args
+  return `pkgname=erigon-bin
+pkgdesc='Ethereum implementation on the efficiency frontier. Binary distribution'
+pkgver=${version}
+pkgrel=1
+url='https://github.com/ledgerwatch/erigon'
+provides=('erigon')
+conflicts=('erigon')
+arch=('x86_64')
+license=('GPL3')
+source=("${download_url}")
+b2sums=('${version_hash}')
+
+package() {
+    install -Dm755 erigon "${env("pkgdir")}"/usr/bin/erigon
 }
 `
 }
