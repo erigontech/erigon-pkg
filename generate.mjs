@@ -7,6 +7,11 @@ if(!argv.v){
   process.exit()
 }
 
+function semverRegex() {
+	return /(?<=^v?|\sv?)(?:(?:0|[1-9]\d{0,9}?)\.){2}(?:0|[1-9]\d{0,9})(?:-(?:--+)?(?:0|[1-9]\d*|\d*[a-z]+\d*)){0,100}(?=$| |\+|\.)(?:(?<=-\S+)(?:\.(?:--?|[\da-z-]*[a-z-]\d*|0|[1-9]\d*)){1,100}?)?(?!\.)(?:\+(?:[\da-z]\.?-?){1,100}?(?!\w))?(?!\+)/gi;
+}
+
+
 
 export const makeAndDownloadSourcePackage = async (version) => {
   const download_url =  `https://github.com/ledgerwatch/erigon/archive/refs/tags/v${version}.tar.gz`
@@ -34,7 +39,19 @@ export const makeAndDownloadBinPackage = async (version) => {
 
 
 // remove tmp dir
-fs.rmSync("temp", {recursive: true})
+try  {
+  fs.rmSync("temp", {recursive: true})
+}catch{
+}
+
+
+const version = argv.v
+if(!semverRegex().test(version)) {
+  console.error(`version ${version} failed regex for semver`)
+  process.exit(1)
+}
+
+
 
 //{
 //  const pkg = await makeAndDownloadSourcePackage(argv.v)
@@ -42,16 +59,25 @@ fs.rmSync("temp", {recursive: true})
 //}
 
 {
-  const pkg = await makeAndDownloadBinPackage(argv.v)
+  const pkg = await makeAndDownloadBinPackage(version)
   const pkgPath = aur.formBinPackage(pkg)
-  $`cd temp &&
-    git clone aur@aur.archlinux.org:erigon-bin.git &&
-    cd erigon-bin &&
-    mv ../../${pkgPath}PKGBUILD ../../${pkgPath}.SRCINFO . &&
-    git add -A &&
-    git commit -m "update to ${pkg.version}" &&
-    git push
-  `
+  const command = `cd temp &&
+git clone aur@aur.archlinux.org:erigon-bin.git &&
+cd erigon-bin &&
+mv ../../${pkgPath}PKGBUILD ../../${pkgPath}.SRCINFO . &&
+git add -A &&
+git commit -m "update to ${pkg.version}" &&
+git push
+`
+
+  if(argv.publish) {
+    $`${command}`
+  } else {
+    console.log("dry run, use flag --publish to publish")
+    console.log(`
+${command}
+`)
+  }
 }
 
 
