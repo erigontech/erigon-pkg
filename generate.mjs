@@ -15,9 +15,7 @@ const fileTooSmall = (filename) => {
   return fs.statSync(filename).size < 1024*1024
 }
 
-export const makeAndDownloadSourcePackage = async (version) => {
-  const download_url =  `https://github.com/ledgerwatch/erigon/archive/refs/tags/v${version}.tar.gz`
-  const filename = `src-v${version}.tar.gz`
+export const downloadAndHashPackage = async ({version, download_url, filename}) => {
   fs.ensureDirSync("temp")
   await $`curl -L '${download_url}' > ./temp/${filename}`.quiet()
   if(fileTooSmall("temp/"+filename)) {
@@ -32,21 +30,10 @@ export const makeAndDownloadSourcePackage = async (version) => {
   }
 }
 
-export const makeAndDownloadBinPackage = async (version) => {
-  const download_url = `https://github.com/ledgerwatch/erigon/releases/download/v${version}/erigon_${version}_linux_amd64.tar.gz`
-  const filename = `bin-v${version}.tar.gz`
-  fs.ensureDirSync("temp")
-  await $`curl -L '${download_url}' > ./temp/${filename}`.quiet()
-  if(fileTooSmall("temp/"+filename)) {
-    throw "error: downloaded empty package"
-  }
-  const version_hash = (await $`b2sum ./temp/${filename}`).stdout.split("  ")[0]
-  return {
-    version,
-    download_url,
-    version_hash,
-    filename,
-  }
+export const getLatestVersion = async ()=>{
+  const payload = await (await fetch("https://api.github.com/repos/ledgerwatch/erigon/releases")).json()
+  const version = payload[0].name.replace("v","")
+  return version
 }
 
 
@@ -58,29 +45,37 @@ const main = async ()=>{
   }
 
 
-  const version = argv.v
+  let version = argv.v
+
+  if(version === "latest") {
+    version = await getLatestVersion("latest")
+  }
+  console.log(chalk.green(`using latest version: ${version}`))
+
   if(!semverRegex().test(version)) {
     console.error(`version ${version} failed regex for semver`)
     process.exit(1)
   }
 
-  //{
-  //  const pkg = await makeAndDownloadSourcePackage(argv.v)
-  //  const pkgPath = aur.formSourcePackage(pkg)
-  //}
+  //const pkg = await downloadAndHashPackage({
+  //  filename: `src-v${version}.tar.gz`
+  //  download_url: `https://github.com/ledgerwatch/erigon/archive/refs/tags/v${version}.tar.gz`,
+  //  version
+  //})
 
 {
-    const pkg = await makeAndDownloadBinPackage(version)
+    const pkg = await downloadAndHashPackage({
+      filename: `bin-v${version}.tar.gz`,
+      download_url: `https://github.com/ledgerwatch/erigon/releases/download/v${version}/erigon_${version}_linux_amd64.tar.gz`,
+      version
+    })
     const pkgPath = await aur.formBinPackage(pkg)
     await $`git clone aur@aur.archlinux.org:erigon-bin.git ./temp/erigon-bin`
     await $`find ${pkgPath} -type f | xargs mv -t ./temp/erigon-bin`
     if(argv.publish === true || argv.publish === "true") {
       await $`cd ./temp/erigon-bin && git add -A && git commit -m "update to ${pkg.version}" && git push`
     } else {
-      console.log(chalk.green("dry run success use flag --publish to publish"))
-      console.log(chalk.gray(`
-${command}
-`))
+      console.log(chalk.green("dry run success. run with flag --publish to publish"))
     }
   }
 
