@@ -7,23 +7,22 @@ const env = (str)=> { return "${"+str+"}" }
 
 
 
-export const formSourcePackage = (args) => {
-  const rootDir = `temp/aur_src_erigon_${args.version}/`
+export const formSourcePackage = async (args) => {
+  const rootDir = `temp/aur_${args.filename}/`
   fs.removeSync(rootDir)
   fs.ensureDirSync(rootDir)
   fs.outputFileSync(`${rootDir}/PKGBUILD`, PKGBUILD_Source(args))
-  $`cd ${rootDir} && makepkg --printsrcinfo > .SRCINFO`
+  await $`cd ${rootDir} && makepkg --printsrcinfo > .SRCINFO`.quiet()
 
   return rootDir
 }
 
-export const formBinPackage = (args) => {
-  const rootDir = `temp/aur_bin_erigon_${args.version}/`
+export const formBinPackage = async (args) => {
+  const rootDir = `temp/aur_${args.filename}/`
   fs.removeSync(rootDir)
   fs.ensureDirSync(rootDir)
   fs.outputFileSync(`${rootDir}/PKGBUILD`, PKGBUILD_bin(args))
-  $`cd ${rootDir} && makepkg --printsrcinfo > .SRCINFO`
-
+  await $`cd ${rootDir} && makepkg --printsrcinfo > .SRCINFO`.quiet()
   return rootDir
 }
 

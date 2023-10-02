@@ -8,60 +8,73 @@ if(!argv.v){
 }
 
 function semverRegex() {
-	return /(?<=^v?|\sv?)(?:(?:0|[1-9]\d{0,9}?)\.){2}(?:0|[1-9]\d{0,9})(?:-(?:--+)?(?:0|[1-9]\d*|\d*[a-z]+\d*)){0,100}(?=$| |\+|\.)(?:(?<=-\S+)(?:\.(?:--?|[\da-z-]*[a-z-]\d*|0|[1-9]\d*)){1,100}?)?(?!\.)(?:\+(?:[\da-z]\.?-?){1,100}?(?!\w))?(?!\+)/gi;
+  return /(?<=^v?|\sv?)(?:(?:0|[1-9]\d{0,9}?)\.){2}(?:0|[1-9]\d{0,9})(?:-(?:--+)?(?:0|[1-9]\d*|\d*[a-z]+\d*)){0,100}(?=$| |\+|\.)(?:(?<=-\S+)(?:\.(?:--?|[\da-z-]*[a-z-]\d*|0|[1-9]\d*)){1,100}?)?(?!\.)(?:\+(?:[\da-z]\.?-?){1,100}?(?!\w))?(?!\+)/gi;
 }
 
-
+const fileTooSmall = (filename) => {
+  return fs.statSync(filename).size < 1024*1024
+}
 
 export const makeAndDownloadSourcePackage = async (version) => {
   const download_url =  `https://github.com/ledgerwatch/erigon/archive/refs/tags/v${version}.tar.gz`
+  const filename = `src-v${version}.tar.gz`
   fs.ensureDirSync("temp")
-  await $`curl -L '${download_url}' > ./temp/src-v${version}.tar.gz`.quiet()
-  const version_hash = (await $`b2sum ./temp/src-v${version}.tar.gz`).stdout.split("  ")[0]
+  await $`curl -L '${download_url}' > ./temp/${filename}`.quiet()
+  if(fileTooSmall("temp/"+filename)) {
+    throw "error: downloaded empty package"
+  }
+  const version_hash = (await $`b2sum ./temp/${filename}`).stdout.split("  ")[0]
   return {
     version,
     download_url,
     version_hash,
+    filename,
   }
 }
 
 export const makeAndDownloadBinPackage = async (version) => {
   const download_url = `https://github.com/ledgerwatch/erigon/releases/download/v${version}/erigon_${version}_linux_amd64.tar.gz`
+  const filename = `bin-v${version}.tar.gz`
   fs.ensureDirSync("temp")
-  await $`curl -L '${download_url}' > ./temp/bin-v${version}.tar.gz`.quiet()
-  const version_hash = (await $`b2sum ./temp/bin-v${version}.tar.gz`).stdout.split("  ")[0]
+  await $`curl -L '${download_url}' > ./temp/${filename}`.quiet()
+  if(fileTooSmall("temp/"+filename)) {
+    throw "error: downloaded empty package"
+  }
+  const version_hash = (await $`b2sum ./temp/${filename}`).stdout.split("  ")[0]
   return {
     version,
     download_url,
     version_hash,
+    filename,
   }
 }
 
 
-// remove tmp dir
-try  {
-  fs.rmSync("temp", {recursive: true})
-}catch{
-}
+const main = async ()=>{
+  // remove tmp dir
+  try  {
+    fs.rmSync("temp", {recursive: true})
+  }catch{
+  }
 
 
-const version = argv.v
-if(!semverRegex().test(version)) {
-  console.error(`version ${version} failed regex for semver`)
-  process.exit(1)
-}
+  const version = argv.v
+  if(!semverRegex().test(version)) {
+    console.error(`version ${version} failed regex for semver`)
+    process.exit(1)
+  }
 
 
 
-//{
-//  const pkg = await makeAndDownloadSourcePackage(argv.v)
-//  const pkgPath = aur.formSourcePackage(pkg)
-//}
+  //{
+  //  const pkg = await makeAndDownloadSourcePackage(argv.v)
+  //  const pkgPath = aur.formSourcePackage(pkg)
+  //}
 
 {
-  const pkg = await makeAndDownloadBinPackage(version)
-  const pkgPath = aur.formBinPackage(pkg)
-  const command = `cd temp &&
+    const pkg = await makeAndDownloadBinPackage(version)
+    const pkgPath = await aur.formBinPackage(pkg)
+    const command = `cd temp &&
 git clone aur@aur.archlinux.org:erigon-bin.git &&
 cd erigon-bin &&
 mv ../../${pkgPath}PKGBUILD ../../${pkgPath}.SRCINFO . &&
@@ -69,19 +82,21 @@ git add -A &&
 git commit -m "update to ${pkg.version}" &&
 git push
 `
-
-  if(argv.publish) {
-    $`${command}`
-  } else {
-    console.log("dry run, use flag --publish to publish")
-    console.log(`
+    if(argv.publish) {
+      $`${command}`
+    } else {
+      console.log(chalk.green("dry run success use flag --publish to publish"))
+      console.log(chalk.gray(`
 ${command}
-`)
+`))
+    }
   }
+
 }
 
 
 
-
-
-
+main().catch((e)=>{
+  console.error(chalk.red(e))
+  process.exit(1)
+})
