@@ -73,7 +73,7 @@ const main = async ()=>{
     const pkg = await makeAndDownloadBinPackage(version)
     const pkgPath = await aur.formBinPackage(pkg)
     await $`git clone aur@aur.archlinux.org:erigon-bin.git ./temp/erigon-bin`
-    await $`mv ${pkgPath}PKGBUILD ${pkgPath}.SRCINFO ./temp/erigon-bin`
+    await $`find ${pkgPath} -type f | xargs mv -t ./temp/erigon-bin`
     if(argv.publish === true || argv.publish === "true") {
       await $`cd ./temp/erigon-bin && git add -A && git commit -m "update to ${pkg.version}" && git push`
     } else {
