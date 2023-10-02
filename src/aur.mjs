@@ -18,7 +18,7 @@ export const formSourcePackage = async (args) => {
 }
 
 export const formBinPackage = async (args) => {
-  const rootDir = `temp/aur_${args.filename}/`
+  const rootDir = `temp/bin_${args.filename}/`
   fs.removeSync(rootDir)
   fs.ensureDirSync(rootDir)
   fs.outputFileSync(`${rootDir}/PKGBUILD`, PKGBUILD_bin(args))
