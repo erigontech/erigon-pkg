@@ -74,6 +74,7 @@ const main = async ()=>{
     await $`find ${pkgPath} -type f | xargs mv -t ./temp/erigon-bin`
     if(argv.publish === true || argv.publish === "true") {
       await $`cd ./temp/erigon-bin && git add -A && git commit -m "update to ${pkg.version}" && git push`
+      process.exit(0)
     } else {
       console.log(chalk.green("dry run success. run with flag --publish to publish"))
     }
