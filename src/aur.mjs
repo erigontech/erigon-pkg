@@ -46,19 +46,20 @@ build() {
 
     export CGO_LDFLAGS="$LDFLAGS"
     export GIT_TAG="v${env("pkgver")}"
-    make all
+    make erigon devnet downloader integration rpcdaemon sentry txpool sentinel caplin-phase1
 }
 
 package() {
     cd ${env("pkgname")}-${env("pkgver")}
 
-    install -Dm755 build/bin/erigon "${env("pkgdir")}"/usr/bin/erigon
-    install -Dm755 build/bin/rpcdaemon "${env("pkgdir")}"/usr/bin/erigon-rpcdaemon
-    install -Dm755 build/bin/sentry "${env("pkgdir")}"/usr/bin/erigon-sentry
-    install -Dm755 build/bin/downloader "${env("pkgdir")}"/usr/bin/erigon-downloader
-    install -Dm755 build/bin/txpool "${env("pkgdir")}"/usr/bin/erigon-txpool
-    install -Dm755 build/bin/integration "${env("pkgdir")}"/usr/bin/erigon-integration
-    install -Dm755 build/bin/hack "${env("pkgdir")}"/usr/bin/erigon-hack
+    for binary in build/bin/*; do
+        filename=\${binary##*/}
+        if [[ "\${filename}" = "erigon" ]]; then
+            install -Dm755 "${env("binary")}" "\${pkgdir}/usr/bin/\${filename}"
+        else
+            install -Dm755 "\${binary}" "\${pkgdir}/usr/bin/erigon-\${filename}"
+        fi
+    done
 }
 `
 }

@@ -57,28 +57,41 @@ const main = async ()=>{
     process.exit(1)
   }
 
-  //const pkg = await downloadAndHashPackage({
-  //  filename: `src-v${version}.tar.gz`
-  //  download_url: `https://github.com/ledgerwatch/erigon/archive/refs/tags/v${version}.tar.gz`,
-  //  version
-  //})
 
-{
-    const pkg = await downloadAndHashPackage({
+
+  const aurBin = async ()=> {
+    const pkgPath = await aur.formBinPackage(await downloadAndHashPackage({
       filename: `bin-v${version}.tar.gz`,
       download_url: `https://github.com/ledgerwatch/erigon/releases/download/v${version}/erigon_${version}_linux_amd64.tar.gz`,
       version
-    })
-    const pkgPath = await aur.formBinPackage(pkg)
+    }))
     await $`git clone aur@aur.archlinux.org:erigon-bin.git ./temp/erigon-bin`
     await $`find ${pkgPath} -type f | xargs mv -t ./temp/erigon-bin`
     if(argv.publish === true || argv.publish === "true") {
-      await $`cd ./temp/erigon-bin && git add -A && git commit -m "update to ${pkg.version}" && git push`
+      await $`cd ./temp/erigon-bin && git add -A && git commit -m "update to ${version}" && git push`
       process.exit(0)
     } else {
       console.log(chalk.green("dry run success. run with flag --publish to publish"))
     }
   }
+  const aurSrc = async ()=> {
+    const pkgPath = await aur.formSourcePackage(await downloadAndHashPackage({
+      filename: `src-v${version}.tar.gz`,
+      download_url: `https://github.com/ledgerwatch/erigon/archive/refs/tags/v${version}.tar.gz`,
+      version,
+    }))
+    await $`git clone aur@aur.archlinux.org:erigon.git ./temp/erigon`
+    await $`find ${pkgPath} -type f | xargs mv -t ./temp/erigon`
+    if(argv.publish === true || argv.publish === "true") {
+      await $`cd ./temp/erigon && git add -A && git commit -m "update to ${version}" && git push`
+      process.exit(0)
+    } else {
+      console.log(chalk.green("dry run success. run with flag --publish to publish"))
+    }
+  }
+
+  await aurBin()
+  await aurSrc()
 
 }
 
