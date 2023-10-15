@@ -68,8 +68,7 @@ const main = async ()=>{
     await $`git clone aur@aur.archlinux.org:erigon-bin.git ./temp/erigon-bin`
     await $`find ${pkgPath} -type f | xargs mv -t ./temp/erigon-bin`
     if(argv.publish === true || argv.publish === "true") {
-      await $`cd ./temp/erigon && git add -A && git commit -m "update to ${version}" && git push`.catch(console.log)
-      process.exit(0)
+      await $`cd ./temp/erigon-bin && git add -A && git commit -m "update to ${version}" && git push`.catch(console.log)
     } else {
       console.log(chalk.green("dry run success. run with flag --publish to publish"))
     }
@@ -84,7 +83,6 @@ const main = async ()=>{
     await $`find ${pkgPath} -type f | xargs mv -t ./temp/erigon`
     if(argv.publish === true || argv.publish === "true") {
       await $`cd ./temp/erigon && git add -A && git commit -m "update to ${version}" && git push`.catch(console.log)
-      process.exit(0)
     } else {
       console.log(chalk.green("dry run success. run with flag --publish to publish"))
     }
@@ -92,6 +90,8 @@ const main = async ()=>{
 
   await aurBin()
   await aurSrc()
+
+  process.exit(0)
 
 }
 
