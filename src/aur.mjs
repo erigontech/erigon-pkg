@@ -31,7 +31,7 @@ export const PKGBUILD_Source = (args) => {
   return `pkgname=erigon
 pkgdesc='Ethereum implementation on the efficiency frontier.'
 pkgver=${version}
-pkgrel=1
+pkgrel=2
 epoch=1
 url='https://github.com/ledgerwatch/erigon'
 arch=('x86_64' 'aarch64')
@@ -46,7 +46,7 @@ build() {
 
     export CGO_LDFLAGS="$LDFLAGS"
     export GIT_TAG="v${env("pkgver")}"
-    make erigon devnet downloader integration rpcdaemon sentry txpool sentinel caplin-phase1
+    make erigon devnet downloader integration rpcdaemon sentry txpool sentinel caplin
 }
 
 package() {
