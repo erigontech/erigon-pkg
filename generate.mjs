@@ -32,7 +32,7 @@ export const downloadAndHashPackage = async ({version, download_url, filename}) 
 
 export const getLatestVersion = async ()=>{
   const payload = await (await fetch("https://api.github.com/repos/ledgerwatch/erigon/releases")).json()
-  const version = payload[0].name.replace("v","")
+  const version = payload[0].tag_name.replace("v","")
   return version
 }
 
