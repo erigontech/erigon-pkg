@@ -33,7 +33,7 @@ pkgdesc='Ethereum implementation on the efficiency frontier.'
 pkgver=${version}
 pkgrel=2
 epoch=1
-url='https://github.com/ledgerwatch/erigon'
+url='https://github.com/erigontech/erigon'
 arch=('x86_64' 'aarch64')
 license=('GPL3')
 makedepends=('go')
@@ -71,7 +71,7 @@ export const PKGBUILD_bin = (args) => {
 pkgdesc='Ethereum implementation on the efficiency frontier. Binary distribution'
 pkgver=${version}
 pkgrel=1
-url='https://github.com/ledgerwatch/erigon'
+url='https://github.com/erigontech/erigon'
 provides=('erigon')
 conflicts=('erigon')
 arch=('x86_64')
