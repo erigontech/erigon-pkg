@@ -16,6 +16,7 @@ const fileTooSmall = (filename) => {
 }
 
 export const downloadAndHashPackage = async ({version, download_url, filename}) => {
+  console.log(download_url)
   fs.ensureDirSync("temp")
   await $`curl -L '${download_url}' > ./temp/${filename}`.quiet()
   if(fileTooSmall("temp/"+filename)) {
@@ -62,7 +63,7 @@ const main = async ()=>{
   const aurBin = async ()=> {
     const pkgPath = await aur.formBinPackage(await downloadAndHashPackage({
       filename: `bin-v${version}.tar.gz`,
-      download_url: `https://github.com/erigontech/erigon/releases/download/v${version}/erigon_${version}_linux_amd64.tar.gz`,
+      download_url: `https://github.com/erigontech/erigon/releases/download/${version}/erigon_${version}_linux_amd64.tar.gz`,
       version
     }))
     await $`git clone aur@aur.archlinux.org:erigon-bin.git ./temp/erigon-bin`
