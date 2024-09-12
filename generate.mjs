@@ -77,7 +77,7 @@ const main = async ()=>{
   const aurSrc = async ()=> {
     const pkgPath = await aur.formSourcePackage(await downloadAndHashPackage({
       filename: `src-v${version}.tar.gz`,
-      download_url: `https://github.com/erigontech/erigon/archive/refs/tags/v${version}.tar.gz`,
+      download_url: `https://github.com/erigontech/erigon/archive/refs/tags/${version}.tar.gz`,
       version,
     }))
     await $`git clone aur@aur.archlinux.org:erigon.git ./temp/erigon`
