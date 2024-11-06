@@ -63,7 +63,7 @@ const main = async ()=>{
   const aurBin = async ()=> {
     const pkgPath = await aur.formBinPackage(await downloadAndHashPackage({
       filename: `bin-v${version}.tar.gz`,
-      download_url: `https://github.com/erigontech/erigon/releases/download/${version}/erigon_${version}_linux_amd64.tar.gz`,
+      download_url: `https://github.com/erigontech/erigon/releases/download/v${version}/erigon_${version}_linux_amd64.tar.gz`,
       version
     }))
     await $`git clone aur@aur.archlinux.org:erigon-bin.git ./temp/erigon-bin`
@@ -77,7 +77,7 @@ const main = async ()=>{
   const aurSrc = async ()=> {
     const pkgPath = await aur.formSourcePackage(await downloadAndHashPackage({
       filename: `src-v${version}.tar.gz`,
-      download_url: `https://github.com/erigontech/erigon/archive/refs/tags/${version}.tar.gz`,
+      download_url: `https://github.com/erigontech/erigon/archive/refs/tags/v${version}.tar.gz`,
       version,
     }))
     await $`git clone aur@aur.archlinux.org:erigon.git ./temp/erigon`
